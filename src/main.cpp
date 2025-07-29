@@ -32,10 +32,7 @@ static Color mandelbrot_color(std::complex<double> c) {
 struct Size {
     int width, height;
 
-    friend bool operator==(const Size &a, const Size &b) {
-        return a.width == b.width && a.height == b.height;
-    }
-    friend bool operator!=(const Size &a, const Size &b) { return !(a == b); }
+    friend bool operator==(const Size &a, const Size &b) = default;
 };
 
 class Mandelbrot {
