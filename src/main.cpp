@@ -1,8 +1,11 @@
-#include <complex>
 #include <raylib.h>
+#include <raymath.h>
+
+#include <cassert>
+#include <complex>
 #include <vector>
 
-Color gradient(Color start, Color end, double point) {
+static Color gradient(Color start, Color end, double point) {
     auto scale = [](auto s, auto e, auto p) { return s * (1.0 - p) + e * p; };
     return Color{
         (unsigned char)scale(start.r, end.r, point),
@@ -12,7 +15,7 @@ Color gradient(Color start, Color end, double point) {
     };
 }
 
-Color in_mandelbrot_set(std::complex<double> c) {
+static Color mandelbrot_color(std::complex<double> c) {
     constexpr int max_iters = 200;
     std::complex<double> z{0.0, 0.0};
     for (int i = 0; i < max_iters; i++) {
@@ -26,17 +29,53 @@ Color in_mandelbrot_set(std::complex<double> c) {
     return Color{0x00, 0x00, 0x00, 0xff};
 }
 
+struct Size {
+    int width, height;
+};
+
+class Mandelbrot {
+public:
+    Mandelbrot(Size size);
+    Size size() const;
+    void size(Size size_);
+    void draw(Vector2 origin) const;
+
+private:
+    void compute_();
+    std::vector<Color> grid_;
+    Size size_;
+};
+
+Mandelbrot::Mandelbrot(Size size) : size_(size) { compute_(); }
+Size Mandelbrot::size() const { return size_; }
+void Mandelbrot::size(Size size) {
+    size_ = size;
+    compute_();
+}
+void Mandelbrot::draw(Vector2 origin) const {
+    for (int i = 0; i < size_.height; i++) {
+        for (int j = 0; j < size_.width; j++) {
+            DrawPixel(origin.x + j, origin.y + i, grid_[i * size_.width + j]);
+        }
+    }
+}
+void Mandelbrot::compute_() {
+    assert(size_.width > 0);
+    assert(size_.height > 0);
+    grid_.resize(size_.width * size_.height);
+    for (int i = 0; i < size_.height; i++) {
+        for (int j = 0; j < size_.width; j++) {
+            double x = (double)j / size_.width * (2.0 + 0.47) - 2.0;
+            double y = (double)i / size_.height * (1.12 + 1.12) - 1.12;
+            grid_[i * size_.width + j] = mandelbrot_color({x, y});
+        }
+    }
+}
+
 int main() {
     constexpr int width = 400;
     constexpr int height = 400;
-    std::vector<Color> points(width * height);
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            double x = (double)j / width * (2.0 + 0.47) - 2.0;
-            double y = (double)i / height * (1.12 + 1.12) - 1.12;
-            points[width * i + j] = in_mandelbrot_set({x, y});
-        }
-    }
+    Mandelbrot m({width, height});
 
     InitWindow(width, height, "mandelbrot");
     SetTargetFPS(60);
@@ -44,11 +83,7 @@ int main() {
         BeginDrawing();
 
         ClearBackground(WHITE);
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                DrawPixel(j, i, points[width * i + j]);
-            }
-        }
+        m.draw({0, 0});
 
         EndDrawing();
     }
