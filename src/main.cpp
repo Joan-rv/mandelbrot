@@ -31,6 +31,11 @@ static Color mandelbrot_color(std::complex<double> c) {
 
 struct Size {
     int width, height;
+
+    friend bool operator==(const Size &a, const Size &b) {
+        return a.width == b.width && a.height == b.height;
+    }
+    friend bool operator!=(const Size &a, const Size &b) { return !(a == b); }
 };
 
 class Mandelbrot {
@@ -73,13 +78,19 @@ void Mandelbrot::compute_() {
 }
 
 int main() {
-    constexpr int width = 400;
-    constexpr int height = 400;
-    Mandelbrot m({width, height});
+    Size size{400, 400};
+    Mandelbrot m(size);
 
-    InitWindow(width, height, "mandelbrot");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(size.width, size.height, "mandelbrot");
     SetTargetFPS(60);
     while (!WindowShouldClose()) {
+        size.width = GetScreenWidth();
+        size.height = GetScreenHeight();
+        if (size != m.size()) {
+            m.size(size);
+        }
+
         BeginDrawing();
 
         ClearBackground(WHITE);
