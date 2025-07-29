@@ -19,7 +19,7 @@ static Color mandelbrot_color(std::complex<double> c) {
     constexpr int max_iters = 200;
     std::complex<double> z{0.0, 0.0};
     for (int i = 0; i < max_iters; i++) {
-        if (std::abs(z) > 2) {
+        if (z.real() * z.real() + z.imag() * z.imag() > 2 * 2) {
             Color start = {0x44, 0x01, 0x54, 0xff};
             Color end = {0xfd, 0xe7, 0x25, 0xff};
             return gradient(start, end, (double)i / max_iters);
