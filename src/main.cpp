@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <raylib.h>
 #include <raymath.h>
 
@@ -37,21 +38,31 @@ struct Size {
 
 class Mandelbrot {
 public:
-    Mandelbrot(Size size);
+    Mandelbrot(Size size, double zoom = 1.0);
     Size size() const;
     void size(Size size_);
+    double zoom() const;
+    void zoom(double zoom);
     void draw(Vector2 origin) const;
 
 private:
     void compute_();
     std::vector<Color> grid_;
     Size size_;
+    double zoom_;
 };
 
-Mandelbrot::Mandelbrot(Size size) : size_(size) { compute_(); }
+Mandelbrot::Mandelbrot(Size size, double zoom) : size_(size), zoom_(zoom) {
+    compute_();
+}
 Size Mandelbrot::size() const { return size_; }
 void Mandelbrot::size(Size size) {
     size_ = size;
+    compute_();
+}
+double Mandelbrot::zoom() const { return zoom_; }
+void Mandelbrot::zoom(double zoom) {
+    zoom_ = zoom;
     compute_();
 }
 void Mandelbrot::draw(Vector2 origin) const {
@@ -68,7 +79,9 @@ void Mandelbrot::compute_() {
     for (int i = 0; i < size_.height; i++) {
         for (int j = 0; j < size_.width; j++) {
             double x = (double)j / size_.width * (2.0 + 0.47) - 2.0;
+            x /= zoom_;
             double y = (double)i / size_.height * (1.12 + 1.12) - 1.12;
+            y /= zoom_;
             grid_[i * size_.width + j] = mandelbrot_color({x, y});
         }
     }
@@ -86,6 +99,10 @@ int main() {
         size.height = GetScreenHeight();
         if (size != m.size()) {
             m.size(size);
+        }
+        const float mouse_wheel_move = GetMouseWheelMove();
+        if (mouse_wheel_move != 0.0f) {
+            m.zoom(std::clamp(m.zoom() + 0.05 * mouse_wheel_move, 0.1, 3.0));
         }
 
         BeginDrawing();
