@@ -6,6 +6,7 @@ out vec4 finalColor;
 
 uniform ivec2 resolution;
 uniform float zoom;
+uniform vec2 offset;
 
 vec3 gradient(vec3 start, vec3 end, float point) {
     return start * (1 - point) + end * point;
@@ -38,5 +39,6 @@ void main() {
     pos.x = pos.x * (2.0 + 0.47) - 2.0;
     pos.y = pos.y * (1.12 + 1.12) - 1.12;
     pos /= zoom;
+    pos += offset;
     finalColor = vec4(mandelbrot(pos), 1.0);
 }

@@ -6,25 +6,37 @@
 
 int main() {
     std::array<int, 2> size = {400, 400};
+    std::array<float, 2> offset = {0.f, 0.f};
+    float zoom = 1.0;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(size[0], size[1], "mandelbrot");
     SetTargetFPS(60);
 
     Shader mandelbrot_shader = LoadShader(NULL, "shaders/mandelbrot.frag");
-    float zoom = 1.0;
+    auto set_mandelbrot_uniform = [&](const char *name, const void *value,
+                                      ShaderUniformDataType type) {
+        int loc = GetShaderLocation(mandelbrot_shader, name);
+        SetShaderValue(mandelbrot_shader, loc, value, type);
+    };
 
     while (!WindowShouldClose()) {
         size[0] = GetScreenWidth();
         size[1] = GetScreenHeight();
         zoom *= 1 + 0.05 * GetMouseWheelMove();
-        zoom = std::clamp(zoom, 0.01f, 10.0f);
-        SetShaderValue(mandelbrot_shader,
-                       GetShaderLocation(mandelbrot_shader, "resolution"),
-                       &size, SHADER_UNIFORM_IVEC2);
-        SetShaderValue(mandelbrot_shader,
-                       GetShaderLocation(mandelbrot_shader, "zoom"), &zoom,
-                       SHADER_UNIFORM_FLOAT);
+        zoom = std::max(0.01f, zoom);
+        if (IsKeyDown(KEY_W))
+            offset[1] += 0.1f / zoom;
+        if (IsKeyDown(KEY_S))
+            offset[1] -= 0.1f / zoom;
+        if (IsKeyDown(KEY_D))
+            offset[0] += 0.1f / zoom;
+        if (IsKeyDown(KEY_A))
+            offset[0] -= 0.1f / zoom;
+
+        set_mandelbrot_uniform("resolution", &size, SHADER_UNIFORM_IVEC2);
+        set_mandelbrot_uniform("zoom", &zoom, SHADER_UNIFORM_FLOAT);
+        set_mandelbrot_uniform("offset", &offset, SHADER_UNIFORM_VEC2);
 
         BeginDrawing();
 
