@@ -89,29 +89,34 @@ void Mandelbrot::compute_() {
 
 int main() {
     Size size{400, 400};
-    Mandelbrot m(size);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(size.width, size.height, "mandelbrot");
     SetTargetFPS(60);
+
+    Shader mandelbrot_shader = LoadShader(NULL, "shaders/mandelbrot.frag");
+
     while (!WindowShouldClose()) {
         size.width = GetScreenWidth();
         size.height = GetScreenHeight();
-        if (size != m.size()) {
-            m.size(size);
-        }
-        const float mouse_wheel_move = GetMouseWheelMove();
-        if (mouse_wheel_move != 0.0f) {
-            m.zoom(std::clamp(m.zoom() + 0.05 * mouse_wheel_move, 0.1, 3.0));
-        }
+        SetShaderValue(mandelbrot_shader,
+                       GetShaderLocation(mandelbrot_shader, "resolution"),
+                       (float *)&size, SHADER_UNIFORM_IVEC2);
 
         BeginDrawing();
 
         ClearBackground(WHITE);
-        m.draw({0, 0});
+
+        {
+            BeginShaderMode(mandelbrot_shader);
+            DrawRectangle(0, 0, size.width, size.height, WHITE);
+            EndShaderMode();
+        }
 
         EndDrawing();
     }
+
+    UnloadShader(mandelbrot_shader);
     CloseWindow();
     return 0;
 }
