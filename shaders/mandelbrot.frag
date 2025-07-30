@@ -1,5 +1,12 @@
 #version 330
 
+#extension GL_ARB_gpu_shader_fp64: enable
+#ifdef GL_ARB_gpu_shader_fp64
+#define complex dvec2
+#else
+#define complex vec2
+#endif
+
 in vec2 fragTexCoord;
 
 out vec4 finalColor;
@@ -12,16 +19,16 @@ vec3 gradient(vec3 start, vec3 end, float point) {
     return start * (1 - point) + end * point;
 }
 
-vec2 cx_sqr(vec2 v) {
-    return vec2(
+complex cx_sqr(complex v) {
+    return complex(
         v.x * v.x - v.y * v.y,
         2 * v.x * v.y
     );
 }
 
-vec3 mandelbrot(vec2 c) {
+vec3 mandelbrot(complex c) {
     const int max_iters = 200;
-    vec2 z = vec2(0.0);
+    complex z = vec2(0.0);
     for (int i = 0; i < max_iters; i++) {
         if (dot(z, z) > 2 * 2) {
             vec3 start = vec3(0x44 / 255.0, 0x01 / 255.0, 0x54 / 255.0);
@@ -34,7 +41,7 @@ vec3 mandelbrot(vec2 c) {
 }
 
 void main() {
-    vec2 pos = gl_FragCoord.xy / resolution;
+    complex pos = gl_FragCoord.xy / resolution;
     // scale to be in mandelbrot coordinates
     pos.x = pos.x * (2.0 + 0.47) - 2.0;
     pos.y = pos.y * (1.12 + 1.12) - 1.12;
