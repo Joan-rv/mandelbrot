@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <array>
 
+#ifdef PLATFORM_DESKTOP
+#define GLSL_VERSION 330
+#else // PLATFORM_ANDROID, PLATFORM_WEB
+#define GLSL_VERSION 100
+#endif
+
 int main() {
     std::array<int, 2> size = {400, 400};
     std::array<float, 2> offset = {0.f, 0.f};
@@ -13,7 +19,8 @@ int main() {
     InitWindow(size[0], size[1], "mandelbrot");
     SetTargetFPS(60);
 
-    Shader mandelbrot_shader = LoadShader(NULL, "shaders/mandelbrot.frag");
+    Shader mandelbrot_shader =
+        LoadShader(NULL, TextFormat("shaders/mandelbrot%i.frag", GLSL_VERSION));
     auto set_mandelbrot_uniform = [&](const char *name, const void *value,
                                       ShaderUniformDataType type) {
         int loc = GetShaderLocation(mandelbrot_shader, name);
