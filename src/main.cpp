@@ -21,11 +21,11 @@ int main() {
 
     Shader mandelbrot_shader =
         LoadShader(NULL, TextFormat("shaders/mandelbrot%i.frag", GLSL_VERSION));
-    auto set_mandelbrot_uniform = [&](const char *name, const void *value,
-                                      ShaderUniformDataType type) {
-        int loc = GetShaderLocation(mandelbrot_shader, name);
-        SetShaderValue(mandelbrot_shader, loc, value, type);
-    };
+    auto set_mandelbrot_uniform =
+        [&](const char *name, const void *value, ShaderUniformDataType type) {
+            int loc = GetShaderLocation(mandelbrot_shader, name);
+            SetShaderValue(mandelbrot_shader, loc, value, type);
+        };
 
     while (!WindowShouldClose()) {
         size[0] = GetScreenWidth();
